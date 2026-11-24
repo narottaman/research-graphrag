@@ -1,0 +1,36 @@
+services:
+  api:
+    build: {context: ., dockerfile: Dockerfile}
+    ports: ["8080:8000"]
+    env_file: .env
+    volumes: ["objects:/data/objects"]
+    depends_on: [neo4j, chroma, qdrant, redis]
+  worker:
+    build: {context: ., dockerfile: Dockerfile.worker}
+    env_file: .env
+    volumes: ["objects:/data/objects"]
+    depends_on: [neo4j, chroma, qdrant, redis]
+  neo4j:
+    image: neo4j:5.26-community
+    environment:
+      NEO4J_AUTH: neo4j/change-me
+    ports: ["7474:7474", "7687:7687"]
+    volumes: ["neo4j_data:/data"]
+  chroma:
+    image: chromadb/chroma:0.6.3
+    ports: ["8001:8000"]
+    volumes: ["chroma_data:/chroma/chroma"]
+  qdrant:
+    image: qdrant/qdrant:v1.13.4
+    ports: ["6333:6333"]
+    volumes: ["qdrant_data:/qdrant/storage"]
+  redis:
+    image: redis:7.4-alpine
+  grobid:
+    image: lfoppiano/grobid:0.8.2
+    ports: ["8070:8070"]
+volumes:
+  objects: {}
+  neo4j_data: {}
+  chroma_data: {}
+  qdrant_data: {}
